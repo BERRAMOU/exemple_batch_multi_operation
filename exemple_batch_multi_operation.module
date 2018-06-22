@@ -1,0 +1,77 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: beramos
+ * Date: 6/22/18
+ * Time: 10:02 PM
+ */
+
+module_load_include('inc', 'exemple_batch_multi_operation', 'includes/Helpers');
+
+
+/**
+ * Implements hook_menu().
+ */
+function exemple_batch_multi_operation_menu() {
+  $items                                        = array();
+  $items['admin/exemple-batch-multi-operation'] = array(
+    'title'           => 'Exemple of batch multi operation',
+    'description'     => 'Exemple of batch multi operatio',
+    'page callback'   => '_exemple_batch_multi_operation',
+    'access callback' => TRUE,
+    'type'            => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+/**
+ * Callback Function to Set batch
+ *
+ */
+function _exemple_batch_multi_operation() {
+  //- Create batch
+  $batch = array(
+    'operations'       => array(),
+    'finished'         => '_exemple_batch_multi_operation_batch_finished',
+    'title'            => t('Batch multi operation'),
+    'init_message'     => t('Batch multi operation is starting.'),
+    'progress_message' => t('Processed @current out of @total.'),
+    'error_message'    => t('Batch has encountered an error.'),
+  );
+
+  //- Add first operation of 1000 element
+  $data_operation_1 = populate_array_for_test(1000);
+  //- where to start
+  $progress1 = 0;
+  //- how many to process for each run
+  $limit1 = 10;
+  //- how many records to process until stop - can do query here to get max times to run
+  $data_max1 = count($data_operation_1);
+  while ($progress1 <= $data_max1) {
+    $batch['operations'][] = array(
+      'exemple_batch_multi_operation_op1_process',
+      array($data_operation_1, $progress1, $limit1),
+    );
+    $progress1             = $progress1 + $limit1;
+  }
+
+  //- Add second operation  of  10000 element
+  $data_operation_2 = populate_array_for_test(10000);
+  //- where to start
+  $progress2 = 0;
+  //- how many to process for each run
+  $limit2 = 20;
+  //- how many records to process until stop - can do query here to get max times to run
+  $data_max2 = count($data_operation_2);
+  while ($progress2 <= $data_max2) {
+    $batch['operations'][] = array(
+      'exemple_batch_multi_operation_op2_process',
+      array($data_operation_2, $progress2, $limit2),
+    );
+    $progress2             = $progress2 + $limit2;
+  }
+
+  batch_set($batch);
+  //- page to return to after complete
+  batch_process('<front>');
+}
